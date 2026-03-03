@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoFlow AI</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="app-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="CargoFlow AI Logo"
+                    style="height: 48px; width: 48px; border-radius: 6px; object-fit: contain;">
+                <span>CargoFlow AI</span>
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="#" class="nav-item"><i data-lucide="bell"></i> Notifications</a>
+
+            <div class="user-profile">
+                <div class="avatar"><i data-lucide="user"></i></div>
+                <span>John Doe</span>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav class="side-nav">
+                <a href="#" class="side-item active" data-target="dashboardView"><i data-lucide="home"></i>
+                    Dashboard</a>
+                <a href="#" class="side-item" data-target="invoiceView"><i data-lucide="upload"></i> Upload</a>
+                <a href="#" class="side-item" data-target="allInvoicesView"><i data-lucide="file-check"></i> All
+                    Invoices</a>
+                <a href="#" class="side-item"><i data-lucide="archive"></i> Archive</a>
+            </nav>
+            <div class="side-nav-bottom">
+                <a href="#" class="side-item"><i data-lucide="settings"></i> Settings</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 class="section-title">Dashboard Overview</h2>
+                    <button class="btn btn-primary" onclick="openInvoiceView()"><i data-lucide="upload"></i> Upload
+                        Invoice</button>
+                </div>
+
+                <div class="stats-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="stat-card"
+                        style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow);">
+                        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Processed
+                        </p>
+                        <h3 style="font-size: 1.5rem; color: var(--text-main);">1,284</h3>
+                        <span style="color: var(--success); font-size: 0.75rem; font-weight: 500;">+12% this week</span>
+                    </div>
+                    <div class="stat-card"
+                        style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow);">
+                        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Accuracy Rate
+                        </p>
+                        <h3 style="font-size: 1.5rem; color: var(--text-main);">99.8%</h3>
+                    </div>
+                    <div class="stat-card"
+                        style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow);">
+                        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Pending Review
+                        </p>
+                        <h3 style="font-size: 1.5rem; color: var(--text-main);">3</h3>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Recent Extractions</h3>
+                <div id="recentDashboardList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <!-- Dynamically populated up to 3 length -->
+                    <p style="color:var(--text-muted); font-size: 0.875rem;">Loading recent extractions...</p>
+                </div>
+            </div>
+
+            <!-- All Invoices View -->
+            <div id="allInvoicesView" class="view-section hidden">
+                <h2 class="section-title" style="margin-bottom: 1.5rem;">All Extracted Invoices</h2>
+                <div id="allInvoicesList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <p style="color:var(--text-muted); font-size: 0.875rem;">Loading extractions...</p>
+                </div>
+            </div>
+
+            <!-- Invoice Extraction View -->
+            <div id="invoiceView" class="view-section hidden invoice-view">
+                <!-- Left Column: Upload & Preview -->
+                <div class="left-col">
+                    <h2 class="section-title">Upload & Preview</h2>
+
+                    <!-- Upload Box -->
+                    <div class="upload-box" id="uploadZone">
+                        <input type="file" id="fileInput"
+                            accept=".pdf, .png, .jpg, .jpeg, application/pdf, image/png, image/jpeg" hidden>
+                        <p>Drag & drop an invoice (PDF, JPG, PNG)</p>
+                        <button class="btn btn-primary" id="browseBtn">Upload Invoice</button>
+                        <!-- Loading state -->
+                        <div id="loadingOverlay" class="loading-overlay hidden">
+                            <i data-lucide="loader-2" class="spin"></i>
+                            <span id="loadingText">Extracting...</span>
+                        </div>
+                    </div>
+
+                    <!-- Document Preview -->
+                    <div class="preview-box">
+                        <div class="empty-preview" id="emptyPreview">
+                            <i data-lucide="image"></i>
+                            <p>No document preview</p>
+                        </div>
+                        <!-- The iframe or img tag will be injected here by JS -->
+                        <div id="documentViewer" class="document-viewer hidden"></div>
+                    </div>
+
+                    <div id="connectionStatus" class="connection-status hidden">
+                        <!-- Server Logs status -->
+                        <span class="dot"></span><span class="status-text">Disconnected</span>
+                    </div>
+                </div>
+
+                <!-- Right Column: Extracted Data -->
+                <div class="right-col">
+                    <h2 class="section-title">Extracted Data</h2>
+
+                    <div id="extractionEmpty" class="empty-state"
+                        style="border: 2px dashed var(--border-color); border-radius: 12px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); min-height: 400px;">
+                        <i data-lucide="scan-line"
+                            style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>Upload a document to view extraction results</p>
+                    </div>
+
+                    <div class="extraction-card hidden" id="extractionCard">
+                        <div class="card-header">
+                            <h3>AI Extraction Results</h3>
+                            <p>Verification Needed: Review & Edit fields if necessary</p>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Invoice Number</label>
+                                <div class="input-with-icon verified">
+                                    <input type="text" id="valInvoiceNum" placeholder="INV-0000">
+                                    <i data-lucide="check" class="status-icon"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Invoice Date</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="valDate" placeholder="YYYY-MM-DD">
+                                    <i data-lucide="edit-2" class="edit-icon"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Carrier / Vendor</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="valCarrier" placeholder="Vendor Name">
+                                    <i data-lucide="edit-2" class="edit-icon"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Transaction / Source</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="valType" placeholder="Transaction Type / ID">
+                                    <i data-lucide="edit-2" class="edit-icon"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Total Amount</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="valTotal" placeholder="0.00">
+                                    <i data-lucide="edit-2" class="edit-icon"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Currency</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="valCurrency" placeholder="USD">
+                                    <i data-lucide="edit-2" class="edit-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="line-items-section">
+                            <h4>Line Items</h4>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Quantity</th>
+                                            <th>Unit / Rate</th>
+                                            <th>Total</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lineItemsBody">
+                                        <!-- Populated via JS -->
+                                        <tr>
+                                            <td colspan="5" class="empty-row">Awaiting extraction...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- References Modal/Expander for additional data if present -->
+                        <details class="references-details">
+                            <summary>Additional References Data (B/L, Containers)</summary>
+                            <div class="refs-content" id="refsContent">
+                                <pre id="rawJsonPreview"><code>No extra data</code></pre>
+                            </div>
+                        </details>
+
+                        <div class="card-actions">
+                            <button class="btn btn-outline" onclick="openDashboard()">Cancel</button>
+                            <button class="btn btn-primary" id="saveValidateBtn">Save & Validate <i
+                                    data-lucide="check-square"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End invoiceView -->
+        </main>
+    </div>
+
+    <!-- Data Modal for single invoice view -->
+    <div id="dataModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Invoice Details</h3>
+                <button class="btn-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContentHtml"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
