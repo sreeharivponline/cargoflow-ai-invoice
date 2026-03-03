@@ -1,6 +1,6 @@
 venv/
 __pycache__/
 *.pyc
-.env
+
 saved_invoices/
 .DS_Store
